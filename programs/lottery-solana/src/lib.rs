@@ -159,17 +159,23 @@ pub mod lottery_solana {
     pub fn pick_winner(ctx: Context<PickWinner>) -> Result<()> {
     let lottery = &mut ctx.accounts.lottery_account;
 
-    //only for creator of lottery
+    // Only lottery creator can pick winner
     require!(
         lottery.authority == ctx.accounts.authority.key(),
         LotteryError::Unauthorized
     );
 
+    // Lottery must have reached goal
     require!(
         lottery.state == LotteryState::GoalMet,
         LotteryError::LotteryNotActive
     );
-    require!(lottery.winner.is_none(), LotteryError::AlreadyCompleted);
+
+    // Lottery should not already have a winner
+    require!(
+        lottery.winner.is_none(),
+        LotteryError::AlreadyCompleted
+    );
 
     let participant_count = lottery.participants.len();
     require!(participant_count > 0, LotteryError::NoWinner);
@@ -179,8 +185,18 @@ pub mod lottery_solana {
         ctx.accounts.randomness_account_data.data.borrow()
     ).map_err(|_| LotteryError::NoWinner)?;
 
-    // Get revealed random value
     let clock = Clock::get()?;
+
+    // Step 1: Commit phase
+    if randomness_data.seed_slot != clock.slot {
+        msg!("Committing randomness for future slot: {}", clock.slot + 1);
+        // Here you would normally call a commit instruction from client
+        // Store randomness account in lottery to reference it later
+        lottery.randomness_account = Some(ctx.accounts.randomness_account_data.key());
+        return Ok(());
+    }
+
+    // Step 2: Reveal phase
     let revealed_random_value = randomness_data
         .get_value(clock.slot)
         .map_err(|_| LotteryError::NoWinner)?;
@@ -189,27 +205,20 @@ pub mod lottery_solana {
     let random_bytes: [u8; 8] = revealed_random_value[0..8].try_into().unwrap();
     let random_number = u64::from_le_bytes(random_bytes);
 
-    //Pick winner
+    // Pick winner
     let winner_index = (random_number % participant_count as u64) as usize;
     let winner_pubkey = lottery.participants[winner_index];
 
+    // Update lottery
     lottery.winner = Some(winner_pubkey);
     lottery.state = LotteryState::Completed;
 
-    msg!(
-        "Winner picked randomly by creator {}: {}",
-        ctx.accounts.authority.key(),
-        winner_pubkey
-    );
-
-    msg!(
-        "Lottery {} completed. Total funds remain in PDA: {} lamports",
-        lottery.id,
-        lottery.total_raised
-    );
+    msg!("Winner picked randomly by creator {}: {}", ctx.accounts.authority.key(), winner_pubkey);
+    msg!("Lottery {} completed. Total funds remain in PDA: {} lamports", lottery.id, lottery.total_raised);
 
     Ok(())
 }
+
 
 
 }
