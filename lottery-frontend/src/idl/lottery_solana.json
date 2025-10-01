@@ -1,0 +1,381 @@
+{
+  "address": "ATNbt1MAreJosSPKpuDjmDCGSJ3WR4QkVmJQwid236kG",
+  "metadata": {
+    "name": "lottery_solana",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "Created with Anchor"
+  },
+  "instructions": [
+    {
+      "name": "buy_lottery",
+      "discriminator": [
+        160,
+        226,
+        177,
+        255,
+        84,
+        50,
+        57,
+        223
+      ],
+      "accounts": [
+        {
+          "name": "lottery_account",
+          "writable": true
+        },
+        {
+          "name": "buyer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "get_active_lotteries",
+      "discriminator": [
+        182,
+        191,
+        161,
+        106,
+        125,
+        244,
+        247,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "registry"
+        }
+      ],
+      "args": [],
+      "returns": {
+        "vec": "pubkey"
+      }
+    },
+    {
+      "name": "initialize",
+      "discriminator": [
+        175,
+        175,
+        109,
+        31,
+        13,
+        152,
+        155,
+        237
+      ],
+      "accounts": [
+        {
+          "name": "lottery_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  108,
+                  111,
+                  116,
+                  116,
+                  101,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              },
+              {
+                "kind": "arg",
+                "path": "id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "treasury",
+          "docs": [
+            "It is not required to be a specific program-derived address,",
+            "so we skip Anchor's account validation here."
+          ],
+          "writable": true
+        },
+        {
+          "name": "registry",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  103,
+                  105,
+                  115,
+                  116,
+                  114,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "authority"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "id",
+          "type": "u64"
+        },
+        {
+          "name": "entry_price",
+          "type": "u64"
+        },
+        {
+          "name": "goal_amount",
+          "type": "u64"
+        },
+        {
+          "name": "start_time",
+          "type": "i64"
+        },
+        {
+          "name": "end_time",
+          "type": "i64"
+        }
+      ]
+    },
+    {
+      "name": "pick_winner",
+      "discriminator": [
+        227,
+        62,
+        25,
+        73,
+        132,
+        106,
+        68,
+        96
+      ],
+      "accounts": [
+        {
+          "name": "lottery_account",
+          "writable": true
+        },
+        {
+          "name": "randomness_account_data",
+          "writable": true
+        },
+        {
+          "name": "authority",
+          "signer": true,
+          "relations": [
+            "lottery_account"
+          ]
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": []
+    }
+  ],
+  "accounts": [
+    {
+      "name": "LotteryAccount",
+      "discriminator": [
+        1,
+        165,
+        125,
+        59,
+        215,
+        12,
+        246,
+        7
+      ]
+    },
+    {
+      "name": "LotteryRegistry",
+      "discriminator": [
+        177,
+        54,
+        149,
+        11,
+        55,
+        78,
+        14,
+        254
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "LotteryNotActive",
+      "msg": "Lottery is not active."
+    },
+    {
+      "code": 6001,
+      "name": "LotteryEnded",
+      "msg": "Lottery has already ended."
+    },
+    {
+      "code": 6002,
+      "name": "Overflow",
+      "msg": "Math overflow occurred."
+    },
+    {
+      "code": 6003,
+      "name": "LotteryFull",
+      "msg": "Lottery is full."
+    },
+    {
+      "code": 6004,
+      "name": "AlreadyCompleted",
+      "msg": "Lottery already completed."
+    },
+    {
+      "code": 6005,
+      "name": "NoWinner",
+      "msg": "No winner available."
+    },
+    {
+      "code": 6006,
+      "name": "Unauthorized",
+      "msg": "Only the creator can perform this action."
+    }
+  ],
+  "types": [
+    {
+      "name": "LotteryAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "id",
+            "type": "u64"
+          },
+          {
+            "name": "entry_price",
+            "type": "u64"
+          },
+          {
+            "name": "goal_amount",
+            "type": "u64"
+          },
+          {
+            "name": "total_raised",
+            "type": "u64"
+          },
+          {
+            "name": "start_time",
+            "type": "i64"
+          },
+          {
+            "name": "end_time",
+            "type": "i64"
+          },
+          {
+            "name": "state",
+            "type": {
+              "defined": {
+                "name": "LotteryState"
+              }
+            }
+          },
+          {
+            "name": "winner",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "participants",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "randomness_account",
+            "type": {
+              "option": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LotteryRegistry",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator",
+            "type": "pubkey"
+          },
+          {
+            "name": "lotteries",
+            "type": {
+              "vec": "pubkey"
+            }
+          },
+          {
+            "name": "active_lotteries",
+            "type": {
+              "vec": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "LotteryState",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "GoalMet"
+          },
+          {
+            "name": "Completed"
+          },
+          {
+            "name": "FailedRefunded"
+          }
+        ]
+      }
+    }
+  ]
+}

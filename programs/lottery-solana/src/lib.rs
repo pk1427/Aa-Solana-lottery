@@ -1,7 +1,7 @@
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::{program::invoke, system_instruction};
 
-declare_id!("5SfZAZiAB4f4SbXyu6fF3JyvgBEfGzTaTxifFDAjyRV1");
+declare_id!("ATNbt1MAreJosSPKpuDjmDCGSJ3WR4QkVmJQwid236kG");
 
 #[program]
 pub mod lottery_solana {
